@@ -1,10 +1,10 @@
 #line 1 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\.vscode\\arduino.json"
 {
-  "port": "",
+  "port": "COM6",
   "configuration": "",
   "output": "build",
   "board": "arduino:renesas_uno:unor4wifi",
-  "programmer": "",
+  "programmer": "cmsis-dap",
   "useProgrammer": false,
   "optimize_for_debug": false,
   "configurationRequired": false,
