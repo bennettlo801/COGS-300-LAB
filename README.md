@@ -18,3 +18,5 @@ Using the serial monitor, you can enter:
  - 'q' to rotate the robot left while in place,
  - 'e' to rotate the robot right while in place,
  - any other button to stop the robot.
+
+Using the Processing sketch, use the same controls, except the robot will stop when there is no input.
