@@ -19,22 +19,31 @@ void setup()
 
 void loop()
 {
-    analogWrite(9, 100);  // ENA pin
-    analogWrite(10, 100); // ENB pin
+    analogWrite(9, 150);  // ENA pin
+    analogWrite(10, 150); // ENB pin
 
     if (Serial.available() > 0)
     {
-        // Read the input as a string
-        String input = Serial.readStringUntil('\n');
-        input.trim(); // remove \r or extra spaces
+        // Read the input as a char
+        char input = Serial.read();
+        Serial.print("input received: ");
+        Serial.println(input);
 
-        if (input == "forward")
+        if (input == 'w')
         {
             forward();
         }
-        else if (input == "stop")
+        else if (input == 's')
         {
             backward();
+        }
+        else if (input == 'a')
+        {
+            left();
+        }
+        else if (input == 'd')
+        {
+            right();
         }
         else
         {
@@ -61,10 +70,29 @@ void backward()
     digitalWrite(motor2pin2, HIGH);
 }
 
+void left()
+{
+    digitalWrite(motor1pin1, HIGH);
+    digitalWrite(motor1pin2, LOW);
+
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, HIGH);
+}
+
+void right()
+{
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, HIGH);
+
+    digitalWrite(motor1pin1, HIGH);
+    digitalWrite(motor1pin2, LOW);
+}
+
 void stop()
 {
     digitalWrite(motor1pin1, LOW);
     digitalWrite(motor1pin2, LOW);
+
     digitalWrite(motor2pin1, LOW);
     digitalWrite(motor2pin2, LOW);
 }

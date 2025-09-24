@@ -8,68 +8,109 @@ int motor2pin2 = 5;
 
 #line 7 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void setup();
-#line 19 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 20 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void loop();
-#line 40 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 55 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void forward();
-#line 48 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 64 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void backward();
-#line 56 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 73 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+void left();
+#line 82 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+void right();
+#line 91 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void stop();
 #line 7 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
-void setup() {
-  pinMode(motor1pin1, OUTPUT);
-  pinMode(motor1pin2, OUTPUT);
-  pinMode(motor2pin1, OUTPUT);
-  pinMode(motor2pin2, OUTPUT);
+void setup()
+{
+    pinMode(motor1pin1, OUTPUT);
+    pinMode(motor1pin2, OUTPUT);
+    pinMode(motor2pin1, OUTPUT);
+    pinMode(motor2pin2, OUTPUT);
 
-  pinMode(9,  OUTPUT);  // ENA
-  pinMode(10, OUTPUT);  // ENB
+    pinMode(9, OUTPUT);  // ENA
+    pinMode(10, OUTPUT); // ENB
 
-  Serial.begin(9600);   // Start serial communication
+    Serial.begin(9600); // Start serial communication
 }
 
-void loop() {
-  analogWrite(9, 100);   // ENA pin
-  analogWrite(10, 100);  // ENB pin
+void loop()
+{
+    analogWrite(9, 150);  // ENA pin
+    analogWrite(10, 150); // ENB pin
 
-  if (Serial.available() > 0) {
-    // Read the input as a string
-    String input = Serial.readStringUntil('\n');
-    input.trim();  // remove \r or extra spaces
+    if (Serial.available() > 0)
+    {
+        // Read the input as a char
+        char input = Serial.read();
+        Serial.print("input received: ");
+        Serial.println(input);
 
-    if (input == "forward") {
-      forward();
-    } 
-    else if (input == "stop") {
-      backward();
-    } 
-    else {
-      stop();
+        if (input == 'w')
+        {
+            forward();
+        }
+        else if (input == 's')
+        {
+            backward();
+        }
+        else if (input == 'a')
+        {
+            left();
+        }
+        else if (input == 'd')
+        {
+            right();
+        }
+        else
+        {
+            stop();
+        }
     }
-  }
 }
 
-void forward() {
-  digitalWrite(motor1pin1, HIGH);
-  digitalWrite(motor1pin2, LOW);
+void forward()
+{
+    digitalWrite(motor1pin1, HIGH);
+    digitalWrite(motor1pin2, LOW);
 
-  digitalWrite(motor2pin1, HIGH);
-  digitalWrite(motor2pin2, LOW);
+    digitalWrite(motor2pin1, HIGH);
+    digitalWrite(motor2pin2, LOW);
 }
 
-void backward() {
-  digitalWrite(motor1pin1, LOW);
-  digitalWrite(motor1pin2, HIGH);
+void backward()
+{
+    digitalWrite(motor1pin1, LOW);
+    digitalWrite(motor1pin2, HIGH);
 
-  digitalWrite(motor2pin1, LOW);
-  digitalWrite(motor2pin2, HIGH);
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, HIGH);
 }
 
-void stop() {
-  digitalWrite(motor1pin1, LOW);
-  digitalWrite(motor1pin2, LOW);
-  digitalWrite(motor2pin1, LOW);
-  digitalWrite(motor2pin2, LOW);
+void left()
+{
+    digitalWrite(motor1pin1, HIGH);
+    digitalWrite(motor1pin2, LOW);
+
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, HIGH);
+}
+
+void right()
+{
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, HIGH);
+
+    digitalWrite(motor1pin1, HIGH);
+    digitalWrite(motor1pin2, LOW);
+}
+
+void stop()
+{
+    digitalWrite(motor1pin1, LOW);
+    digitalWrite(motor1pin2, LOW);
+
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, LOW);
 }
 
