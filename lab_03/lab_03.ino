@@ -1,5 +1,3 @@
-// use wasd + qr in the serial monitor to control the robot
-
 int motor1pin1 = 2;
 int motor1pin2 = 3;
 
@@ -77,14 +75,14 @@ void right()
 
 void rotateLeft()
 {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, false);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, true);
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, true);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, false);
 }
 
 void rotateRight()
 {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, true);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, false);
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, false);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, true);
 }
 
 void stop()

@@ -9,25 +9,32 @@ int motor2pin2 = 5;
 int enA = 9;    //right wheel
 int enB = 10;   //left wheel
 
-#line 10 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+// wheel speeds
+const int SPEED_NORMAL = 150;
+const int SPEED_FAST = 225;
+const int SPEED_SLOW = 125;
+
+#line 15 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void setup();
-#line 23 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 28 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void loop();
-#line 63 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 46 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+void setMotor(int enPin, int pin1, int pin2, int speed, bool forward);
+#line 52 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void forward();
-#line 75 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 58 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void backward();
-#line 87 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 64 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void left();
-#line 99 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 70 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void right();
-#line 111 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 76 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void rotateLeft();
-#line 123 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 82 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void rotateRight();
-#line 135 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 88 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void stop();
-#line 10 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
+#line 15 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_03\\lab_03.ino"
 void setup()
 {
     pinMode(motor1pin1, OUTPUT);
@@ -41,127 +48,69 @@ void setup()
     Serial.begin(9600); // Start serial communication
 }
 
-void loop()
-{
-    if (Serial.available() > 0)
-    {
-        // Read the input as a char
+void loop() {
+    if (Serial.available() > 0) {
         char input = Serial.read();
         Serial.print("input received: ");
         Serial.println(input);
 
-        if (input == 'w')
-        {
-            forward();
-        }
-        else if (input == 's')
-        {
-            backward();
-        }
-        else if (input == 'a')
-        {
-            left();
-        }
-        else if (input == 'd')
-        {
-            right();
-        }
-        else if (input == 'q')
-        {
-            rotateLeft();
-        }
-        else if (input == 'e')
-        {
-            rotateRight();
-        }
-        else
-        {
-            stop();
+        switch (input) {
+            case 'w': forward(); break;
+            case 's': backward(); break;
+            case 'a': left(); break;
+            case 'd': right(); break;
+            case 'q': rotateLeft(); break;
+            case 'e': rotateRight(); break;
+            default:  stop(); break;
         }
     }
 }
 
-void forward()
-{
-    analogWrite(enA, 150);
-    analogWrite(enB, 150);
-
-    digitalWrite(motor1pin1, HIGH);
-    digitalWrite(motor1pin2, LOW);
-
-    digitalWrite(motor2pin1, HIGH);
-    digitalWrite(motor2pin2, LOW);
+void setMotor(int enPin, int pin1, int pin2, int speed, bool forward) {
+    analogWrite(enPin, speed);
+    digitalWrite(pin1, forward ? HIGH : LOW);
+    digitalWrite(pin2, forward ? LOW : HIGH);
 }
+
+void forward() {
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, true);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, true);
+}
+
 
 void backward()
 {
-    analogWrite(enA, 150);
-    analogWrite(enB, 150);
-
-    digitalWrite(motor1pin1, LOW);
-    digitalWrite(motor1pin2, HIGH);
-
-    digitalWrite(motor2pin1, LOW);
-    digitalWrite(motor2pin2, HIGH);
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, false);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, false);
 }
 
-void left()
-{
-    analogWrite(enA, 200);
-    analogWrite(enB, 125);
-
-    digitalWrite(motor1pin1, HIGH);
-    digitalWrite(motor1pin2, LOW);
-
-    digitalWrite(motor2pin1, HIGH);
-    digitalWrite(motor2pin2, LOW);
+void left() {
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_FAST, true);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_SLOW, true);
 }
+
 
 void right()
 {
-    analogWrite(enA, 125);
-    analogWrite(enB, 200);
-
-    digitalWrite(motor1pin1, HIGH);
-    digitalWrite(motor1pin2, LOW);
-
-    digitalWrite(motor2pin1, HIGH);
-    digitalWrite(motor2pin2, LOW);
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_SLOW, true);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_FAST, true);
 }
 
 void rotateLeft()
 {
-    analogWrite(enA, 150);
-    analogWrite(enB, 150);
-
-    digitalWrite(motor1pin1, HIGH);
-    digitalWrite(motor1pin2, LOW);
-
-    digitalWrite(motor2pin1, LOW);
-    digitalWrite(motor2pin2, HIGH);
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, true);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, false);
 }
 
 void rotateRight()
 {
-    analogWrite(enA, 150);
-    analogWrite(enB, 150);
-
-    digitalWrite(motor1pin1, LOW);
-    digitalWrite(motor1pin2, HIGH);
-
-    digitalWrite(motor2pin1, HIGH);
-    digitalWrite(motor2pin2, LOW);
+    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, false);
+    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, true);
 }
 
 void stop()
 {
-    analogWrite(enA, 150);
-    analogWrite(enB, 150);
-
-    digitalWrite(motor1pin1, LOW);
-    digitalWrite(motor1pin2, LOW);
-
-    digitalWrite(motor2pin1, LOW);
-    digitalWrite(motor2pin2, LOW);
+    setMotor(enA, motor1pin1, motor1pin2, 0, true);
+    setMotor(enB, motor2pin1, motor2pin2, 0, true);
 }
 

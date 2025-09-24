@@ -42,12 +42,12 @@ void setup() {
   
   // Create buttons (arranged roughly like WASD + QE)
   buttons = new ControlButton[6];
-  buttons[0] = new ControlButton(width/2 - 30, 120, 60, 60, 'W');  // forward
-  buttons[1] = new ControlButton(width/2 - 30, 190, 60, 60, 'S');  // backward
-  buttons[2] = new ControlButton(width/2 - 100, 190, 60, 60, 'A'); // left
-  buttons[3] = new ControlButton(width/2 + 40, 190, 60, 60, 'D');  // right
-  buttons[4] = new ControlButton(width/2 - 100, 120, 60, 60, 'Q'); // rotate left
-  buttons[5] = new ControlButton(width/2 + 40, 120, 60, 60, 'E');  // rotate right
+  buttons[0] = new ControlButton(width/2 - 30, 120, 60, 60, 'w'); // forward
+  buttons[1] = new ControlButton(width/2 - 30, 190, 60, 60, 's'); // backward
+  buttons[2] = new ControlButton(width/2 - 100, 190, 60, 60, 'a'); // left
+  buttons[3] = new ControlButton(width/2 + 40, 190, 60, 60, 'd'); // right
+  buttons[4] = new ControlButton(width/2 - 100, 120, 60, 60, 'q'); // rotate left
+  buttons[5] = new ControlButton(width/2 + 40, 120, 60, 60, 'e'); // rotate right
 }
 
 void draw() {
