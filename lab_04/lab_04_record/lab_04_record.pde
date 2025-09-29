@@ -4,7 +4,7 @@ Serial port;
 PrintWriter out;
 
 void setup() {
-  println(Serial.list());                 
+  println(Serial.list());
   String portName = Serial.list()[0];     // <-- change to your port index
   port = new Serial(this, portName, 115200);
   port.bufferUntil('\n');
