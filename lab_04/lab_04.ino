@@ -4,7 +4,7 @@ const int encoderRight = 6, encoderLeft = 7;
 
 // encoder specs
 const int ticks_per_rev = 40;
-const float wheel_radius = 65.0; // mm
+const float wheel_radius = 65.0 / 2; // mm
 
 // constants
 const float distance_per_rev  = 2.0 * M_PI * wheel_radius; 
