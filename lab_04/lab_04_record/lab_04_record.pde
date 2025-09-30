@@ -9,9 +9,12 @@ void setup() {
   port = new Serial(this, portName, 115200);
   port.bufferUntil('\n');
 
+  // Create a timestamped CSV file
   String fn = nf(year(),4)+nf(month(),2)+nf(day(),2)+"_"+nf(hour(),2)+nf(minute(),2)+nf(second(),2);
   out = createWriter("arduino_log_"+fn+".csv");
-  out.println("t_ms,d1,d2");
+
+  // CSV header matches Arduino output
+  out.println("t_ms,distanceRight_mm,distanceLeft_mm");
 }
 
 void serialEvent(Serial p) {
@@ -20,12 +23,21 @@ void serialEvent(Serial p) {
 
   String[] parts = split(line, ',');
   if (parts.length == 2) {
-    int d1 = int(parts[0]);
-    int d2 = int(parts[1]);
-    out.println(millis()+","+d1+","+d2);
-    out.flush();   // <--- force write to disk immediately
+    // Parse as float
+    float distanceRight = float(parts[0]);
+    float distanceLeft  = float(parts[1]);
+
+    // Record with timestamp in milliseconds
+    out.println(millis() + "," + distanceRight + "," + distanceLeft);
+    out.flush();   // force write to disk immediately
   }
 }
 
-void keyPressed() { out.flush(); out.close(); exit(); }
+// Press any key to safely close the file and exit
+void keyPressed() {
+  out.flush();
+  out.close();
+  exit();
+}
+
 void draw() {}
