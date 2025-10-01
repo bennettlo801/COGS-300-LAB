@@ -1,140 +1,152 @@
 #include <cmath>
 
-// Encoder setup 
-const int encoderRight = 6;
-const int encoderLeft  = 7;
+// motor Constants
+const int SPEED = 175;
 
-// encoder specs
-const int ticks_per_rev = 40;
-const float wheel_radius = 65.0 / 2; // mm
-
-const float distance_per_rev  = 2.0 * M_PI * wheel_radius;
-const float distance_per_tick = distance_per_rev / ticks_per_rev;
-
-long ticksRight = 0;
-long ticksLeft  = 0;
-
-int lastRight = LOW;
-int lastLeft  = LOW;
-
-// Motor setup 
 int motor1pin1 = 2;
 int motor1pin2 = 3;
 
 int motor2pin1 = 4;
 int motor2pin2 = 5;
 
-int enA = 9;    // right wheel
-int enB = 10;   // left wheel
+int motorRight = 9;
+int motorLeft = 10;
 
-// wheel speeds
-const int SPEED_NORMAL = 150;
-const int SPEED_FAST   = 225;
-const int SPEED_SLOW   = 125;
+// encoder constants
+const int encoderRight = 6, encoderLeft = 7;
 
-// Setup 
-void setup() {
-    // Encoder pins
-    pinMode(encoderRight, INPUT_PULLUP);
-    pinMode(encoderLeft, INPUT_PULLUP);
+// encoder specs
+const int ticks_per_rev = 40;
+const int wheel_diameter = 65; // mm
 
-    lastRight = digitalRead(encoderRight);
-    lastLeft  = digitalRead(encoderLeft);
+const int distance_per_rev = M_PI * wheel_diameter;
+const int distance_per_tick = distance_per_rev / ticks_per_rev;
 
-    // Motor pins
-    pinMode(motor1pin1, OUTPUT);
-    pinMode(motor1pin2, OUTPUT);
-    pinMode(motor2pin1, OUTPUT);
-    pinMode(motor2pin2, OUTPUT);
+int ticksRight = 0;
+int ticksLeft = 0;
 
-    pinMode(enA, OUTPUT);
-    pinMode(enB, OUTPUT);
+int lastRight = LOW;
+int lastLeft = LOW;
 
-    // Serial communication
-    Serial.begin(115200);
+void setup()
+{
+	// motor
+	pinMode(motor1pin1, OUTPUT);
+	pinMode(motor1pin2, OUTPUT);
+	pinMode(motor2pin1, OUTPUT);
+	pinMode(motor2pin2, OUTPUT);
+
+	pinMode(motorRight, OUTPUT);
+	pinMode(motorLeft, OUTPUT);
+
+	// encoder
+	pinMode(encoderRight, INPUT_PULLUP);
+	pinMode(encoderLeft, INPUT_PULLUP);
+	Serial.begin(115200);
+
+	lastRight = digitalRead(encoderRight);
+	lastLeft = digitalRead(encoderLeft);
 }
 
-// Loop 
-void loop() {
-    // 1️⃣ Handle keyboard commands
-    if (Serial.available() > 0) {
-        char input = Serial.read();
-        Serial.print("input received: ");
-        Serial.println(input);
-
-        switch (input) {
-            case 'w': forward();      break;
-            case 's': backward();     break;
-            case 'a': left();         break;
-            case 'd': right();        break;
-            case 'q': rotateLeft();   break;
-            case 'e': rotateRight();  break;
-            default:  stop();         break;
-        }
-    }
-
-    // 2️⃣ Update encoder readings
-    int v1 = digitalRead(encoderRight);
-    int v2 = digitalRead(encoderLeft);
-
-    if (v1 != lastRight) {
-        ticksRight++;
-        lastRight = v1;
-    }
-    if (v2 != lastLeft) {
-        ticksLeft++;
-        lastLeft = v2;
-    }
-
-    // 3️⃣ Compute distances
-    float distanceRight = ticksRight * distance_per_tick;
-    float distanceLeft  = ticksLeft  * distance_per_tick;
-
-    // 4️⃣ Output telemetry
-    Serial.print(distanceRight); Serial.print(",");
-    Serial.println(distanceLeft);
-
-    delay(10); // small delay to reduce serial spam
+void loop()
+{
+	motorInput();
+	encode();
 }
 
-//  Motor functions 
-void setMotor(int enPin, int pin1, int pin2, int speed, bool forward) {
-    analogWrite(enPin, speed);
-    digitalWrite(pin1, forward ? HIGH : LOW);
-    digitalWrite(pin2, forward ? LOW : HIGH);
+void motorInput()
+{
+	if (Serial.available() > 0)
+	{
+		char input = Serial.read();
+
+		switch (input)
+		{
+		case 'w':
+			forward();
+			break;
+		case 's':
+			stop();
+			break;
+		case 'a':
+			left();
+			break;
+		case 'd':
+			right();
+			break;
+		default:
+			stop();
+			break;
+		}
+	}
 }
 
-void forward() {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, true);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, true);
+void forward()
+{
+	analogWrite(motorRight, SPEED);
+	analogWrite(motorLeft, SPEED);
+	digitalWrite(motor1pin1, HIGH);
+	digitalWrite(motor2pin1, HIGH);
 }
 
-void backward() {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, false);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, false);
+void right()
+{
+	analogWrite(motorRight, 0);
+	digitalWrite(motor1pin1, LOW);
+    digitalWrite(motor1pin2, LOW);
+    
+	analogWrite(motorLeft, SPEED);
+    digitalWrite(motor2pin1, HIGH);
+    digitalWrite(motor2pin2, LOW);
 }
 
-void left() {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_FAST, true);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_SLOW, true);
+void left()
+{
+	analogWrite(motorLeft, 0);
+	digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, LOW);
+    
+	analogWrite(motorRight, SPEED);
+    digitalWrite(motor1pin1, HIGH);
+    digitalWrite(motor1pin2, LOW);
 }
 
-void right() {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_SLOW, true);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_FAST, true);
+void stop()
+{
+	analogWrite(motorRight, 0);
+	analogWrite(motorLeft, 0);
+	digitalWrite(motor1pin1, LOW);
+    digitalWrite(motor1pin2, LOW);
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, LOW);
 }
 
-void rotateLeft() {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, true);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, false);
-}
+void encode()
+{
+	int v1 = digitalRead(encoderRight);
+	int v2 = digitalRead(encoderLeft);
 
-void rotateRight() {
-    setMotor(enA, motor1pin1, motor1pin2, SPEED_NORMAL, false);
-    setMotor(enB, motor2pin1, motor2pin2, SPEED_NORMAL, true);
-}
+	// Detect edge on right wheel
+	if (v1 != lastRight)
+	{
+		ticksRight++;
+		lastRight = v1;
+	}
 
-void stop() {
-    setMotor(enA, motor1pin1, motor1pin2, 0, true);
-    setMotor(enB, motor2pin1, motor2pin2, 0, true);
+	// Detect edge on left wheel
+	if (v2 != lastLeft)
+	{
+		ticksLeft++;
+		lastLeft = v2;
+	}
+
+	// compute distance so far
+	int distanceRight = ticksRight * distance_per_tick;
+	int distanceLeft = ticksLeft * distance_per_tick;
+
+	Serial.print(distanceRight);
+	Serial.print(",");
+	Serial.println(distanceLeft);
+
+	delay(10);
 }

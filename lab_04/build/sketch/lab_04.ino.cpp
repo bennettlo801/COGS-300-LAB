@@ -2,72 +2,171 @@
 #line 1 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
 #include <cmath>
 
+// motor Constants
+const int SPEED = 175;
+
+int motor1pin1 = 2;
+int motor1pin2 = 3;
+
+int motor2pin1 = 4;
+int motor2pin2 = 5;
+
+int motorRight = 9;
+int motorLeft = 10;
+
+// encoder constants
 const int encoderRight = 6, encoderLeft = 7;
 
 // encoder specs
 const int ticks_per_rev = 40;
-const float wheel_radius = 65.0 / 2; // mm
+const int wheel_diameter = 65; // mm
 
-// constants
-const float distance_per_rev  = 2.0 * M_PI * wheel_radius; 
-const float distance_per_tick = distance_per_rev / ticks_per_rev;
+const int distance_per_rev = M_PI * wheel_diameter;
+const int distance_per_tick = distance_per_rev / ticks_per_rev;
 
-long ticksRight = 0;
-long ticksLeft  = 0;
+int ticksRight = 0;
+int ticksLeft = 0;
 
 int lastRight = LOW;
-int lastLeft  = LOW;
+int lastLeft = LOW;
 
-#line 19 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+#line 31 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
 void setup();
-#line 28 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+#line 51 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
 void loop();
-#line 19 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
-void setup() {
-  pinMode(encoderRight, INPUT_PULLUP);
-  pinMode(encoderLeft, INPUT_PULLUP);
-  Serial.begin(115200);
+#line 57 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+void motorInput();
+#line 84 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+void forward();
+#line 92 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+void right();
+#line 103 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+void left();
+#line 114 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+void stop();
+#line 124 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+void encode();
+#line 31 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_04\\lab_04.ino"
+void setup()
+{
+	// motor
+	pinMode(motor1pin1, OUTPUT);
+	pinMode(motor1pin2, OUTPUT);
+	pinMode(motor2pin1, OUTPUT);
+	pinMode(motor2pin2, OUTPUT);
 
-  lastRight = digitalRead(encoderRight);
-  lastLeft  = digitalRead(encoderLeft);
+	pinMode(motorRight, OUTPUT);
+	pinMode(motorLeft, OUTPUT);
+
+	// encoder
+	pinMode(encoderRight, INPUT_PULLUP);
+	pinMode(encoderLeft, INPUT_PULLUP);
+	Serial.begin(115200);
+
+	lastRight = digitalRead(encoderRight);
+	lastLeft = digitalRead(encoderLeft);
 }
 
-void loop() {
-  int v1 = digitalRead(encoderRight);
-  int v2 = digitalRead(encoderLeft);
+void loop()
+{
+	motorInput();
+	encode();
+}
 
-  // Detect edge on right wheel
-  if (v1 != lastRight) {
-    ticksRight++;
-    lastRight = v1;
-  }
+void motorInput()
+{
+	if (Serial.available() > 0)
+	{
+		char input = Serial.read();
 
-  // Detect edge on left wheel
-  if (v2 != lastLeft) {
-    ticksLeft++;
-    lastLeft = v2;
-  }
+		switch (input)
+		{
+		case 'w':
+			forward();
+			break;
+		case 's':
+			stop();
+			break;
+		case 'a':
+			left();
+			break;
+		case 'd':
+			right();
+			break;
+		default:
+			stop();
+			break;
+		}
+	}
+}
 
-  // compute distance so far
-  float distanceRight = ticksRight * distance_per_tick;
-  float distanceLeft  = ticksLeft  * distance_per_tick;
+void forward()
+{
+	analogWrite(motorRight, SPEED);
+	analogWrite(motorLeft, SPEED);
+	digitalWrite(motor1pin1, HIGH);
+	digitalWrite(motor2pin1, HIGH);
+}
 
-  Serial.print(distanceRight); Serial.print(",");
-  Serial.println(distanceLeft);
+void right()
+{
+	analogWrite(motorRight, 0);
+	digitalWrite(motor1pin1, LOW);
+    digitalWrite(motor1pin2, LOW);
+    
+	analogWrite(motorLeft, SPEED);
+    digitalWrite(motor2pin1, HIGH);
+    digitalWrite(motor2pin2, LOW);
+}
 
+void left()
+{
+	analogWrite(motorLeft, 0);
+	digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, LOW);
+    
+	analogWrite(motorRight, SPEED);
+    digitalWrite(motor1pin1, HIGH);
+    digitalWrite(motor1pin2, LOW);
+}
 
-  // Serial.print("Right: ");
-  // Serial.print(ticksRight);
-  // Serial.print(" ticks, ");
-  // Serial.print(distanceRight);
-  // Serial.println(" mm");
+void stop()
+{
+	analogWrite(motorRight, 0);
+	analogWrite(motorLeft, 0);
+	digitalWrite(motor1pin1, LOW);
+    digitalWrite(motor1pin2, LOW);
+    digitalWrite(motor2pin1, LOW);
+    digitalWrite(motor2pin2, LOW);
+}
 
-  // Serial.print("Left: ");
-  // Serial.print(ticksLeft);
-  // Serial.print(" ticks, ");
-  // Serial.print(distanceLeft);
-  // Serial.println(" mm");
+void encode()
+{
+	int v1 = digitalRead(encoderRight);
+	int v2 = digitalRead(encoderLeft);
 
-  delay(10);
+	// Detect edge on right wheel
+	if (v1 != lastRight)
+	{
+		ticksRight++;
+		lastRight = v1;
+	}
+
+	// Detect edge on left wheel
+	if (v2 != lastLeft)
+	{
+		ticksLeft++;
+		lastLeft = v2;
+	}
+
+	// compute distance so far
+	int distanceRight = ticksRight * distance_per_tick;
+	int distanceLeft = ticksLeft * distance_per_tick;
+
+	Serial.print(distanceRight);
+	Serial.print(",");
+	Serial.println(distanceLeft);
+
+	delay(10);
 }
 
