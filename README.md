@@ -20,3 +20,16 @@ Using the serial monitor, you can enter:
  - any other button to stop the robot.
 
 Using the Processing sketch, use the same controls, except the robot will stop when there is no input.
+
+### Lab 04
+
+After uploading lab_04.ino, use the record.pde processing sketch to control the robot and save the movement to a .csv file
+
+Controls:
+ - 'w' to drive the robot forwards,
+ - 'a' to pivot the robot left,
+ - 'd' to pivot the robot right,
+ - 's' to stop all movement.
+
+ Add the created arduino_log file to the replay.pde sketch folder, and run the sketch to playback the movement.
+ The arduino log included in the replay folder moves the robot forward, then makes a 90 degree turn left.
