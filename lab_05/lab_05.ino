@@ -2,8 +2,8 @@ int motor1pin1 = 2, motor1pin2 = 3;
 int motor2pin1 = 4, motor2pin2 = 5;
 int rightWheel = 9, leftWheel = 10;
 
-int triggerPinFront = 12, echoPinFront = 11;
-int triggerPinLeft = 13, echoPinLeft = 8;
+int triggerPinFront = 12, echoPinFront = 13;
+int triggerPinLeft = 8, echoPinLeft = 11;
 
 // Running average filter
 const int runningAverageCount = 16;
@@ -72,8 +72,6 @@ int pid(int distance) {
   error = runningAverage(distance) - SET_POINT;
   int output = p * error;
 
-  printToSerial(distance, output);
-
   return output;
 }
 
@@ -88,6 +86,8 @@ int triggerSensor(int triggerPin, int echoPin) {
 
   float distance = (duration / 2) / 29.1;  // Divide by 29.1 or multiply by 0.0343
 
+  Serial.println(distance);
+
   return distance;
 }
 
@@ -95,12 +95,14 @@ void followFront() {
   long distance = triggerSensor(triggerPinFront, echoPinFront);
   int output = pid(distance);
   // map(value, fromLow, fromHigh, toLow, toHigh)
-  // output = map(output, )
+  int output_map = map(output, -25, 275, -100, 100);
+
+  // printToSerial(distance, output_map);
 
   if (output >= 0) {
-    forward(output);
+    forward(output_map);
   } else if (output < 0) {
-    backward(output);
+    backward(output_map);
   }
 }
 
@@ -144,7 +146,7 @@ void forward(int output) {
   digitalWrite(motor1pin1, HIGH);
   digitalWrite(motor1pin2, LOW);
 
-  // Serial.println("attempting forward");
+  Serial.println("attempting forward");
 }
 
 void backward(int output) {
@@ -158,7 +160,7 @@ void backward(int output) {
   digitalWrite(motor1pin1, LOW);
   digitalWrite(motor1pin2, HIGH);
 
-  // Serial.println("attempting backward");
+  Serial.println("attempting backward");
 
 }
 
