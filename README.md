@@ -33,3 +33,9 @@ Controls:
 
  Add the created arduino_log file to the replay.pde sketch folder, and run the sketch to playback the movement.
  The arduino log included in the replay folder moves the robot forward, then makes a 90 degree turn left.
+
+ ### Lab 05
+
+  - Follow me: A robot that follows an object 25cm away. If the object is greater than 25cm, to moves forward to reach the object. If less that 25cm away, it reverses to move away from the object.
+  - Wall following: A robot that drives forwards and adjusts its course by following a wall on the left.
+  - Turn corner: A combination of above that follows walls and keeps objects 25cm away.

@@ -1,11 +1,8 @@
-int motor1pin1 = 2;
-int motor1pin2 = 3;
+int motor1pin1 = 2, motor1pin2 = 3;
+int motor2pin1 = 4, motor2pin2 = 7;
 
-int motor2pin1 = 4;
-int motor2pin2 = 5;
-
-int enA = 9;    //right wheel
-int enB = 10;   //left wheel
+int enA = 5;    //right wheel
+int enB = 6;   //left wheel
 
 // wheel speeds
 const int SPEED_NORMAL = 150;
@@ -38,7 +35,7 @@ void loop() {
             case 'd': right(); break;
             case 'q': rotateLeft(); break;
             case 'e': rotateRight(); break;
-            default:  stop(); break;
+            // default:  stop(); break;
         }
     }
 }
