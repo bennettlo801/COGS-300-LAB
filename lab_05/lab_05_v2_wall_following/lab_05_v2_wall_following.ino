@@ -1,9 +1,11 @@
-int motor1pin1 = 2, motor1pin2 = 3;
-int motor2pin1 = 4, motor2pin2 = 5;
-int rightWheel = 9, leftWheel = 10;
+int motorApin1 = 3, motorApin2 = 2; // left motor
+int motorBpin1 = 7, motorBpin2 = 4; // right motor
+int motorA = 5, motorB = 6;
 
-int triggerPinFront = 12, echoPinFront = 13;
-int triggerPinLeft = 8, echoPinLeft = 11;
+int encoderLeft = 8, encoderRight = 9;
+
+int triggerPinFront = 10, echoPinFront = 11;
+int triggerPinLeft = 10, echoPinLeft = 11;
 
 // Running average filter
 const int runningAverageCount = 16;
@@ -12,17 +14,17 @@ int NextRunningAverage;
 
 // PID algorithm
 const float SET_POINT = 25;
-const float p = 1;
+const float p = 15;
 
 // Ultrasonic sensor
 int error;
 long duration;
 
 void setup() {
-  pinMode(motor1pin1, OUTPUT), pinMode(motor1pin2, OUTPUT);
-  pinMode(motor2pin1, OUTPUT), pinMode(motor2pin2, OUTPUT);
+  pinMode(motorApin1, OUTPUT), pinMode(motorApin2, OUTPUT);
+  pinMode(motorBpin1, OUTPUT), pinMode(motorBpin2, OUTPUT);
 
-  pinMode(rightWheel, OUTPUT), pinMode(leftWheel, OUTPUT);
+  pinMode(motorA, OUTPUT), pinMode(motorB, OUTPUT);
 
   pinMode(triggerPinFront, OUTPUT), pinMode(echoPinFront, INPUT);
   pinMode(triggerPinLeft, OUTPUT), pinMode(echoPinLeft, INPUT);
@@ -31,11 +33,10 @@ void setup() {
 }
 
 void loop() {
-  followFront();
-  // followWall();
+  // forward(255);
+  // followFront();
+  followWall();
   // readControls();
-
-  delay(10);
 }
 
 void printToSerial(int distance, int output) {
@@ -86,33 +87,33 @@ int triggerSensor(int triggerPin, int echoPin) {
 
   float distance = (duration / 2) / 29.1;  // Divide by 29.1 or multiply by 0.0343
 
-  Serial.println(distance);
-
   return distance;
 }
 
 void followFront() {
   long distance = triggerSensor(triggerPinFront, echoPinFront);
   int output = pid(distance);
-  // map(value, fromLow, fromHigh, toLow, toHigh)
-  int output_map = map(output, -25, 275, -100, 100);
+  int output_map = map(output, -25, 275, -255, 255);
 
-  // printToSerial(distance, output_map);
+  printToSerial(distance, output);
 
   if (output >= 0) {
-    forward(output_map);
+    forward(output);
   } else if (output < 0) {
-    backward(output_map);
+    backward(output);
   }
 }
 
 void followWall() {
+  float margin = 1;
   long distance = triggerSensor(triggerPinLeft, echoPinLeft);
   int output = pid(distance);
 
-  if (output > (0 + 5)) {
+  forward(150);
+
+  if (output > (0 + margin)) {
     right(output);
-  } else if (output < (0 - 5)) {
+  } else if (output < (0 - margin)) {
     left(output);
   }
 }
@@ -130,74 +131,77 @@ void readControls() {
       case 's': backward(SPEED); break;
       case 'a': left(SPEED); break;
       case 'd': right(SPEED); break;
-      default: stop(); break;
+      // default: stop(); break;
     }
   }
 }
 
 void forward(int output) {
-  output = abs(output);
 
-  analogWrite(leftWheel, output);
-  digitalWrite(motor2pin1, HIGH);
-  digitalWrite(motor2pin2, LOW);
+  analogWrite(motorB, output);
+  digitalWrite(motorBpin1, HIGH);
+  digitalWrite(motorBpin2, LOW);
 
-  analogWrite(rightWheel, output);
-  digitalWrite(motor1pin1, HIGH);
-  digitalWrite(motor1pin2, LOW);
+  analogWrite(motorA, output);
+  digitalWrite(motorApin1, HIGH);
+  digitalWrite(motorApin2, LOW);
 
-  Serial.println("attempting forward");
+  // Serial.println("attempting forward");
 }
 
 void backward(int output) {
   output = abs(output);
 
-  analogWrite(leftWheel, output);
-  digitalWrite(motor2pin1, LOW);
-  digitalWrite(motor2pin2, HIGH);
+  analogWrite(motorB, output);
+  digitalWrite(motorBpin1, LOW);
+  digitalWrite(motorBpin2, HIGH);
 
-  analogWrite(rightWheel, output);
-  digitalWrite(motor1pin1, LOW);
-  digitalWrite(motor1pin2, HIGH);
+  analogWrite(motorA, output);
+  digitalWrite(motorApin1, LOW);
+  digitalWrite(motorApin2, HIGH);
 
-  Serial.println("attempting backward");
+  // Serial.println("attempting backward");
 
 }
 
 void left(int output) {
   output = abs(output);
 
-  analogWrite(rightWheel, output);
-  digitalWrite(motor1pin1, HIGH);
-  digitalWrite(motor1pin2, LOW);
+  int output_map = map(output, 0, 255, 0, 255);
 
-  analogWrite(leftWheel, 0);
-  digitalWrite(motor2pin1, LOW);
-  digitalWrite(motor2pin2, LOW);
+  analogWrite(motorA, output);
+  digitalWrite(motorApin1, HIGH);
+  digitalWrite(motorApin2, LOW);
 
-  // Serial.println("attempting left");
+  analogWrite(motorB, 125);
+  digitalWrite(motorBpin1, HIGH);
+  digitalWrite(motorBpin2, LOW);
+
+  Serial.println("attempting left");
 }
 
 void right(int output) {
   output = abs(output);
 
-  analogWrite(leftWheel, output);
-  digitalWrite(motor2pin1, HIGH);
-  digitalWrite(motor2pin2, LOW);
+  int output_map = map(output, 0, 255, 255, 0);
 
-  analogWrite(rightWheel, 0);
-  digitalWrite(motor1pin1, LOW);
-  digitalWrite(motor1pin2, LOW);
+  analogWrite(motorB, output_map);
+  digitalWrite(motorBpin1, HIGH);
+  digitalWrite(motorBpin2, LOW);
 
-  // Serial.println("attempting right");
+  analogWrite(motorA, 125);
+  digitalWrite(motorApin1, HIGH);
+  digitalWrite(motorApin2, LOW);
+
+  Serial.println("attempting right");
 }
 
 void stop() {
-  analogWrite(leftWheel, 0);
-  digitalWrite(motor2pin1, LOW);
-  digitalWrite(motor2pin2, LOW);
+  analogWrite(motorB, 0);
+  digitalWrite(motorBpin1, LOW);
+  digitalWrite(motorBpin2, LOW);
 
-  analogWrite(rightWheel, 0);
-  digitalWrite(motor1pin1, LOW);
-  digitalWrite(motor1pin2, LOW);
+  analogWrite(motorA, 0);
+  digitalWrite(motorApin1, LOW);
+  digitalWrite(motorApin2, LOW);
 }
