@@ -39,3 +39,8 @@ Controls:
   - Follow me: A robot that follows an object 25cm away. If the object is greater than 25cm, to moves forward to reach the object. If less that 25cm away, it reverses to move away from the object.
   - Wall following: A robot that drives forwards and adjusts its course by following a wall on the left.
   - Turn corner: A combination of above that follows walls and keeps objects 25cm away.
+
+### Lab 07
+
+ - Object detection: The robot sweeps the swervo and records distances at 45 degree intervals. Based on a Bayes Filter, it deduces the closest object and moves toward it until it hits it.
+ - If the robot is not confident with its reading it will not make any movements (e.g., too many objects nearby)
