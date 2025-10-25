@@ -1,11 +1,11 @@
-int motorApin1 = 3, motorApin2 = 2; // left motor
-int motorBpin1 = 7, motorBpin2 = 4; // right motor
-int motorA = 5, motorB = 6;
+const int motorApin1 = 3, motorApin2 = 2; // left motor
+const int motorBpin1 = 7, motorBpin2 = 4; // right motor
+const int motorA = 5, motorB = 6;
 
-int encoderLeft = 8, encoderRight = 9;
+const int encoderLeft = 8, encoderRight = 9;
 
-int triggerPinFront = 10, echoPinFront = 11;
-int triggerPinLeft = 10, echoPinLeft = 11;
+const int triggerPinFront = 10, echoPinFront = 11;
+const int triggerPinLeft = 12, echoPinLeft = 13;
 
 // Running average filter
 const int runningAverageCount = 16;
@@ -14,11 +14,13 @@ int NextRunningAverage;
 
 // PID algorithm
 const float SET_POINT = 25;
-const float p = 15;
+const float p = 4;
+const int MIN_SPEED = 100;
 
 // Ultrasonic sensor
 int error;
 long duration;
+const int MAX_DISTANCE = 200;
 
 void setup() {
   pinMode(motorApin1, OUTPUT), pinMode(motorApin2, OUTPUT);
@@ -30,12 +32,12 @@ void setup() {
   pinMode(triggerPinLeft, OUTPUT), pinMode(echoPinLeft, INPUT);
 
   Serial.begin(9600);
+  delay(1000);
 }
 
 void loop() {
-  // forward(255);
-  // followFront();
-  followWall();
+  followFront();
+  // followWall();
   // readControls();
 }
 
@@ -47,13 +49,7 @@ void printToSerial(int distance, int output) {
 }
 
 float runningAverage(int distance) {
-  int threshold = 300;
   float runningAverageDistance = 0;
-
-  if (distance > threshold)
-  {
-    distance = threshold;
-  }
 
   RunningAverageBuffer[NextRunningAverage++] = distance;
 
@@ -64,9 +60,8 @@ float runningAverage(int distance) {
   for (int i = 0; i < runningAverageCount; ++i) {
     runningAverageDistance += RunningAverageBuffer[i];
   }
-  return runningAverageDistance /= runningAverageCount;
 
-  delay(100);
+  return runningAverageDistance /= runningAverageCount;
 }
 
 int pid(int distance) {
@@ -83,9 +78,12 @@ int triggerSensor(int triggerPin, int echoPin) {
   delayMicroseconds(10);
   digitalWrite(triggerPin, LOW);
 
-  duration = pulseIn(echoPin, HIGH);
+  duration = pulseIn(echoPin, HIGH, 38000);
 
-  float distance = (duration / 2) / 29.1;  // Divide by 29.1 or multiply by 0.0343
+  float distance = duration * 0.034 / 2;
+
+  if (distance > MAX_DISTANCE) distance = MAX_DISTANCE;
+  if (distance == 0) distance = MAX_DISTANCE;
 
   return distance;
 }
@@ -93,9 +91,10 @@ int triggerSensor(int triggerPin, int echoPin) {
 void followFront() {
   long distance = triggerSensor(triggerPinFront, echoPinFront);
   int output = pid(distance);
-  int output_map = map(output, -25, 275, -255, 255);
 
-  printToSerial(distance, output);
+  if (abs(output) > 0 && abs(output) < MIN_SPEED) {
+    output = MIN_SPEED;
+  }
 
   if (output >= 0) {
     forward(output);
@@ -109,17 +108,18 @@ void followWall() {
   long distance = triggerSensor(triggerPinLeft, echoPinLeft);
   int output = pid(distance);
 
-  forward(150);
+  // if (abs(output) > 0 && abs(output) < MIN_SPEED) {
+  //   output = MIN_SPEED;
+  // }
 
-  if (output > (0 + margin)) {
-    right(output);
-  } else if (output < (0 - margin)) {
-    left(output);
-  }
+  // if (output > (0 + margin)) {
+  //   right(output);
+  // } else if (output < (0 - margin)) {
+  //   left(output);
+  // }
 }
 
 void readControls() {
-  int SPEED = 150;
 
   if (Serial.available() > 0) {
     char input = Serial.read();
@@ -127,10 +127,10 @@ void readControls() {
     Serial.println(input);
 
     switch (input) {
-      case 'w': forward(SPEED); break;
-      case 's': backward(SPEED); break;
-      case 'a': left(SPEED); break;
-      case 'd': right(SPEED); break;
+      case 'w': forward(MIN_SPEED); break;
+      case 's': backward(MIN_SPEED); break;
+      case 'a': left(MIN_SPEED); break;
+      case 'd': right(MIN_SPEED); break;
       // default: stop(); break;
     }
   }
@@ -173,11 +173,11 @@ void left(int output) {
   digitalWrite(motorApin1, HIGH);
   digitalWrite(motorApin2, LOW);
 
-  analogWrite(motorB, 125);
+  analogWrite(motorB, MIN_SPEED);
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
-  Serial.println("attempting left");
+  // Serial.println("attempting left");
 }
 
 void right(int output) {
@@ -189,11 +189,11 @@ void right(int output) {
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
-  analogWrite(motorA, 125);
+  analogWrite(motorA, MIN_SPEED);
   digitalWrite(motorApin1, HIGH);
   digitalWrite(motorApin2, LOW);
 
-  Serial.println("attempting right");
+  // Serial.println("attempting right");
 }
 
 void stop() {

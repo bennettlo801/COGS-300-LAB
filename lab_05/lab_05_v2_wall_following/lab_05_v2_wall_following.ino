@@ -4,7 +4,7 @@ int motorA = 5, motorB = 6;
 
 int encoderLeft = 8, encoderRight = 9;
 
-int triggerPinFront = 10, echoPinFront = 11;
+int triggerPinFront = 12, echoPinFront = 13;
 int triggerPinLeft = 10, echoPinLeft = 11;
 
 // Running average filter
@@ -14,7 +14,7 @@ int NextRunningAverage;
 
 // PID algorithm
 const float SET_POINT = 25;
-const float p = 15;
+const float p = 0.1;
 
 // Ultrasonic sensor
 int error;
@@ -93,7 +93,7 @@ int triggerSensor(int triggerPin, int echoPin) {
 void followFront() {
   long distance = triggerSensor(triggerPinFront, echoPinFront);
   int output = pid(distance);
-  int output_map = map(output, -25, 275, -255, 255);
+  // int output_map = map(output, -25, 275, -255, 255);
 
   printToSerial(distance, output);
 
@@ -115,24 +115,6 @@ void followWall() {
     right(output);
   } else if (output < (0 - margin)) {
     left(output);
-  }
-}
-
-void readControls() {
-  int SPEED = 150;
-
-  if (Serial.available() > 0) {
-    char input = Serial.read();
-    Serial.print("input received: ");
-    Serial.println(input);
-
-    switch (input) {
-      case 'w': forward(SPEED); break;
-      case 's': backward(SPEED); break;
-      case 'a': left(SPEED); break;
-      case 'd': right(SPEED); break;
-      // default: stop(); break;
-    }
   }
 }
 
@@ -164,16 +146,20 @@ void backward(int output) {
 
 }
 
+// sensor is left mounted so to turn right the left wheel must spin faster
+// pid sends a weaker signal when closer to the wall, so this map function inverts the output
+// so the robot correctly accelerates the left wheel
 void left(int output) {
   output = abs(output);
 
-  int output_map = map(output, 0, 255, 0, 255);
+  // map(x, fromLow, fromHigh, toLow, toHigh)
+  // int output_map = map(output, 0, 255, 0, 255); // map the output to the wheel (0-255)
 
   analogWrite(motorA, output);
   digitalWrite(motorApin1, HIGH);
   digitalWrite(motorApin2, LOW);
 
-  analogWrite(motorB, 125);
+  analogWrite(motorB, 100);
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
@@ -183,13 +169,13 @@ void left(int output) {
 void right(int output) {
   output = abs(output);
 
-  int output_map = map(output, 0, 255, 255, 0);
+  // int output_map = map(output, 0, 255, 255, 0);
 
-  analogWrite(motorB, output_map);
+  analogWrite(motorB, output);
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
-  analogWrite(motorA, 125);
+  analogWrite(motorA, 100);
   digitalWrite(motorApin1, HIGH);
   digitalWrite(motorApin2, LOW);
 

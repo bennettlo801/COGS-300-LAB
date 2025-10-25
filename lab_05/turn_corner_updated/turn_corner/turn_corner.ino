@@ -4,7 +4,7 @@ int motorA = 5, motorB = 6;
 
 int encoderLeft = 8, encoderRight = 9;
 
-int triggerPinFront = 10, echoPinFront = 11;
+int triggerPinFront = 12, echoPinFront = 13;
 int triggerPinLeft = 10, echoPinLeft = 11;
 
 // Running average filter
@@ -108,9 +108,9 @@ void followWall() {
   // --- Tunable constants ---
   const int WALL_LOST_THRESHOLD = 45;   // cm, when wall "disappears"
   const int WALL_FOUND_THRESHOLD = 30;  // cm, when wall is detected again
-  const int BASE_SPEED = 130;           // forward speed
+  const int BASE_SPEED = 50;           // forward speed
   const int MAX_CORRECTION = 70;        // max steering correction
-  const int TURN_SPEED = 120;           // pivot turn speed
+  const int TURN_SPEED = 40;           // pivot turn speed
   const int SENSOR_REFRESH_MS = 50;     // faster update rate
   const float margin = 2.0;
 

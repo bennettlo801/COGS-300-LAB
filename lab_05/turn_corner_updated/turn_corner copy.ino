@@ -5,7 +5,7 @@ int motorA = 5, motorB = 6;
 int encoderLeft = 8, encoderRight = 9;
 
 int triggerPinFront = 10, echoPinFront = 11;
-int triggerPinLeft = 8, echoPinLeft = 11;
+int triggerPinLeft = 13, echoPinLeft = 12;
 
 // Running average filter
 const int runningAverageCount = 16;
@@ -14,7 +14,7 @@ int NextRunningAverage;
 
 // PID algorithm
 const float SET_POINT = 25;
-const float p = 3;
+const float p = 15;
 
 // Ultrasonic sensor
 int error;
@@ -34,8 +34,8 @@ void setup() {
 
 void loop() {
   // forward(255);
-  followFront();
-  // followWall();
+  // followFront();
+  followWall();
   // readControls();
 }
 
@@ -105,17 +105,81 @@ void followFront() {
 }
 
 void followWall() {
+  // --- Tunable constants ---
+  const int WALL_LOST_THRESHOLD = 45;   // cm, when wall "disappears"
+  const int WALL_FOUND_THRESHOLD = 30;  // cm, when wall is detected again
+  const int BASE_SPEED = 130;           // forward speed
+  const int MAX_CORRECTION = 70;        // max steering correction
+  const int TURN_SPEED_INNER = 80;      // inner wheel speed during gentle turn
+  const int TURN_SPEED_OUTER = 160;     // outer wheel speed during gentle turn
+  const int SENSOR_REFRESH_MS = 50;     // faster update rate
+  const float margin = 2.0;
+
+  static long prevDist = SET_POINT;
+
   long distance = triggerSensor(triggerPinLeft, echoPinLeft);
-  int output = pid(distance);
-  int output_map = map(output, -25, 275, -255, 255);
+  int output_raw = pid(distance);
+  int correction = constrain(map(output_raw, -200, 200, -MAX_CORRECTION, MAX_CORRECTION),
+                             -MAX_CORRECTION, MAX_CORRECTION);
 
-  forward(100);
+  // === Detect wall loss ===
+  bool wallLost = (distance > WALL_LOST_THRESHOLD && (distance - prevDist) > 10);
 
-  if (output > (0 + 5)) {
-    right(output_map);
-  } else if (output < (0 - 5)) {
-    left(output_map);
+  // --- Normal wall following ---
+  if (!wallLost) {
+    int leftSpeed  = constrain(BASE_SPEED - correction, 0, 255);
+    int rightSpeed = constrain(BASE_SPEED + correction, 0, 255);
+
+    analogWrite(motorA, leftSpeed);
+    digitalWrite(motorApin1, HIGH);
+    digitalWrite(motorApin2, LOW);
+
+    analogWrite(motorB, rightSpeed);
+    digitalWrite(motorBpin1, HIGH);
+    digitalWrite(motorBpin2, LOW);
+
+    Serial.print("Following wall, dist=");
+    Serial.println(distance);
   }
+
+  // --- Wall lost: gradual left turn instead of pivot ---
+  else {
+    Serial.println("Wall lost! Executing gradual left arc...");
+
+    unsigned long startTime = millis();
+    while (true) {
+      // Gradual left turn: both wheels move forward, left slower
+      analogWrite(motorA, TURN_SPEED_INNER);   // inner (left) wheel slower
+      digitalWrite(motorApin1, HIGH);
+      digitalWrite(motorApin2, LOW);
+
+      analogWrite(motorB, TURN_SPEED_OUTER);   // outer (right) wheel faster
+      digitalWrite(motorBpin1, HIGH);
+      digitalWrite(motorBpin2, LOW);
+
+      long newDist = triggerSensor(triggerPinLeft, echoPinLeft);
+      Serial.print("Turning arc... dist=");
+      Serial.println(newDist);
+
+      if (newDist < WALL_FOUND_THRESHOLD) {
+        Serial.println("Wall reacquired — resuming follow");
+        stop();
+        delay(150);
+        break;
+      }
+
+      // Safety timeout
+      if (millis() - startTime > 2000) {
+        Serial.println("Timeout while turning — stopping");
+        stop();
+        break;
+      }
+
+      delay(SENSOR_REFRESH_MS);
+    }
+  }
+
+  prevDist = distance;
 }
 
 void readControls() {
@@ -166,31 +230,38 @@ void backward(int output) {
 
 void left(int output) {
   output = abs(output);
+  output = constrain(output, 0, 255);
 
-  analogWrite(motorA, output);
-  digitalWrite(motorApin1, HIGH);
-  digitalWrite(motorApin2, LOW);
-
-  analogWrite(motorB, 0);
-  digitalWrite(motorBpin1, LOW);
-  digitalWrite(motorBpin2, LOW);
-
-  Serial.println("attempting left");
-}
-
-void right(int output) {
-  output = abs(output);
-
-  analogWrite(motorB, output);
-  digitalWrite(motorBpin1, HIGH);
-  digitalWrite(motorBpin2, LOW);
-
+  // Left wheel stopped
   analogWrite(motorA, 0);
   digitalWrite(motorApin1, LOW);
   digitalWrite(motorApin2, LOW);
 
-  Serial.println("attempting right");
+  // Right wheel forward
+  analogWrite(motorB, output);
+  digitalWrite(motorBpin1, HIGH);
+  digitalWrite(motorBpin2, LOW);
+
+  Serial.println("turning left (left wheel frozen)");
 }
+
+void right(int output) {
+  output = abs(output);
+  output = constrain(output, 0, 255);
+
+  // Right wheel stopped
+  analogWrite(motorB, 0);
+  digitalWrite(motorBpin1, LOW);
+  digitalWrite(motorBpin2, LOW);
+
+  // Left wheel forward
+  analogWrite(motorA, output);
+  digitalWrite(motorApin1, HIGH);
+  digitalWrite(motorApin2, LOW);
+
+  Serial.println("turning right (right wheel frozen)");
+}
+
 
 void stop() {
   analogWrite(motorB, 0);
