@@ -5,7 +5,7 @@ int motorA = 5, motorB = 6;
 const int SPEED = 70;
 
 // IR Sensor
-const int irSensorPin = 8;
+const int irSensorPinMiddle = 8;
 
 void setup() {
   pinMode(motorApin1, OUTPUT), pinMode(motorApin2, OUTPUT);
@@ -13,12 +13,12 @@ void setup() {
 
   pinMode(motorA, OUTPUT), pinMode(motorB, OUTPUT);
 
-  pinMode(irSensorPin, INPUT);
+  pinMode(irSensorPinMiddle, INPUT);
   Serial.begin(9600);
 }
 
 void loop() {
-  int sensorValue = digitalRead(irSensorPin);  // Read the value from the IR sensor
+  int sensorValue = digitalRead(irSensorPinMiddle);  // Read the value from the IR sensor
 
   if (sensorValue == LOW) {
     Serial.println("Line");

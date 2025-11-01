@@ -8,7 +8,7 @@ Aaron, Bennett, Justin, Yalda
 
 ## Labs
 
-### Lab 03
+### Lab 03: Build Your Own Bot
 
 Using the serial monitor, you can enter:
  - 'w' to drive the robot forwards,
@@ -21,7 +21,7 @@ Using the serial monitor, you can enter:
 
 Using the Processing sketch, use the same controls, except the robot will stop when there is no input.
 
-### Lab 04
+### Lab 04: Telemetry
 
 After uploading lab_04.ino, use the record.pde processing sketch to control the robot and save the movement to a .csv file
 
@@ -34,13 +34,22 @@ Controls:
  Add the created arduino_log file to the replay.pde sketch folder, and run the sketch to playback the movement.
  The arduino log included in the replay folder moves the robot forward, then makes a 90 degree turn left.
 
- ### Lab 05
+ ### Lab 05: Wall-following
 
   - Follow me: A robot that follows an object 25cm away. If the object is greater than 25cm, to moves forward to reach the object. If less that 25cm away, it reverses to move away from the object.
   - Wall following: A robot that drives forwards and adjusts its course by following a wall on the left.
   - Turn corner: A combination of above that follows walls and keeps objects 25cm away.
 
-### Lab 07
+### Lab 07: Bayes Filter Object Detection
 
  - Object detection: The robot sweeps the swervo and records distances at 45 degree intervals. Based on a Bayes Filter, it deduces the closest object and moves toward it until it hits it.
  - If the robot is not confident with its reading it will not make any movements (e.g., too many objects nearby)
+
+
+### Lab 08: Line-following
+
+ - This program uses 3 TCRT5000 IR sensors to detect a white tape on the ground and follow it.
+ - When the middle sensor detects the line, it drives the robot forward and slightly left. When the middle sensor does not detect the line, it drives the robot forward and slightly right. This emergent behaviour allows for straight lines and gradual turns.
+ - When the left sensor detects the line, it steers the robot sharply left
+ - When the right sensor detects the line, it steers the robot sharply right
+ - Sharp turns allow the robot to be able to take right angle and acute turns.
