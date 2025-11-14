@@ -2,7 +2,7 @@
 int motorApin1 = 3, motorApin2 = 2; // left motor
 int motorBpin1 = 7, motorBpin2 = 4; // right motor
 int motorA = 5, motorB = 6;
-const int SPEED = 50;
+const int SPEED = 60;
 
 // IR Sensor
 const int irSensorPinMiddle = A0;
@@ -33,15 +33,18 @@ void loop()
       sensorValueLeft == LOW && sensorValueMiddle == LOW)
   {
     left();
+    Serial.println("left");
   }
   else if (sensorValueRight == LOW && sensorValueLeft == HIGH ||
            sensorValueRight == LOW && sensorValueMiddle == LOW)
   {
     right();
+    Serial.println("right");
   }
   else
   {
-    followMiddle(sensorValueMiddle);
+    forward();
+    Serial.println("middle");
   }
 }
 
@@ -57,9 +60,9 @@ void followMiddle(int &sensorValueMiddle)
   }
 }
 
-void forwardLeft()
+void forward()
 {
-  analogWrite(motorB, SPEED);
+  analogWrite(motorB, SPEED * 0.75);
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
@@ -68,9 +71,20 @@ void forwardLeft()
   digitalWrite(motorApin2, LOW);
 }
 
+void forwardLeft()
+{
+  analogWrite(motorB, SPEED);
+  digitalWrite(motorBpin1, HIGH);
+  digitalWrite(motorBpin2, LOW);
+
+  analogWrite(motorA, SPEED * 0.70);
+  digitalWrite(motorApin1, HIGH);
+  digitalWrite(motorApin2, LOW);
+}
+
 void forwardRight()
 {
-  analogWrite(motorB, SPEED * 0.75);
+  analogWrite(motorB, SPEED * 0.70);
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
