@@ -109,13 +109,14 @@ void followWall() {
   long distance = triggerSensor(triggerPinLeft, echoPinLeft);
   int output = pid(distance);
 
-  forward(150);
+  // forward(150);
 
-  if (output > (0 + margin)) {
+  if (output < 0) {
     right(output);
-  } else if (output < (0 - margin)) {
+  } else if (output > 0) {
     left(output);
   }
+  printToSerial(distance, output);
 }
 
 void forward(int output) {
@@ -155,15 +156,15 @@ void left(int output) {
   // map(x, fromLow, fromHigh, toLow, toHigh)
   // int output_map = map(output, 0, 255, 0, 255); // map the output to the wheel (0-255)
 
-  analogWrite(motorA, output);
+  analogWrite(motorA, 50);
   digitalWrite(motorApin1, HIGH);
   digitalWrite(motorApin2, LOW);
 
-  analogWrite(motorB, 100);
+  analogWrite(motorB, 60);
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
-  Serial.println("attempting left");
+  // Serial.println("attempting left");
 }
 
 void right(int output) {
@@ -171,15 +172,15 @@ void right(int output) {
 
   // int output_map = map(output, 0, 255, 255, 0);
 
-  analogWrite(motorB, output);
+  analogWrite(motorB, 50);
   digitalWrite(motorBpin1, HIGH);
   digitalWrite(motorBpin2, LOW);
 
-  analogWrite(motorA, 100);
+  analogWrite(motorA, 60);
   digitalWrite(motorApin1, HIGH);
   digitalWrite(motorApin2, LOW);
 
-  Serial.println("attempting right");
+  // Serial.println("attempting right");
 }
 
 void stop() {
