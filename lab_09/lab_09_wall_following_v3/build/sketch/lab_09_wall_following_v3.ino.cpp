@@ -89,11 +89,11 @@ int pid(float distance) {
 }
 
 void forward(int leftSpeed, int rightSpeed) {
-    analogWrite(motorA, 100);
+    analogWrite(motorA, leftSpeed);
     digitalWrite(motorApin1, HIGH);
     digitalWrite(motorApin2, LOW);
 
-    analogWrite(motorB, 100);
+    analogWrite(motorB, rightSpeed);
     digitalWrite(motorBpin1, HIGH);
     digitalWrite(motorBpin2, LOW);
 
