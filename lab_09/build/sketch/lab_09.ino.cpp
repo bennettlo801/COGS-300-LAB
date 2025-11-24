@@ -6,10 +6,12 @@
 
 Servo myservo;
 
-// Motor pins & speed
-const int motorApin1 = 3, motorApin2 = 2; // left motor
-const int motorBpin1 = 7, motorBpin2 = 4; // right motor
+// Motor constants
+const int motorApin1 = 7, motorApin2 = 4; // left motor
+const int motorBpin1 = 3, motorBpin2 = 2; // right motor
 const int motorA = 5, motorB = 6;
+
+const int MIN_SPEED = 70;
 const int DEFAULT_SPEED = 100;
 
 // Line-following
@@ -20,17 +22,25 @@ const int DELAY_TIME = 150;
 
 // Wall-following
 const int triggerPinLeft = 10, echoPinLeft = 11;
-const int SET_POINT = 10;
-const float KP = 1.0;
+const float SET_POINT = 15.0; 
+const float Kp = 0.15;
+const float Ki = 0.0;
+const float Kd = 0.8; 
+float lastError = 0; // Store the error from the previous loop iteration
+const float DT = 0.030; // Time step in seconds (30ms / 1000)
+
+long duration;
+const int MAX_DISTANCE_WF = 25;
+const int MIN_DISTANCE_WF = 3;
 
 // Object detection
 const int triggerPinFront = 12, echoPinFront = 13;
 const int servoPin = 9;
-const float MAX_DISTANCE = 100.0;
-const float MIN_DISTANCE = 5.0;
+const float MAX_DISTANCE_OF = 100.0;
+const float MIN_DISTANCE_OD = 5.0;
 const int CENTRE_ANGLE = 90;
 
-int servoPosition = 0;
+int servoPosition = 90;
 int incrementServo = 6;
 unsigned long lastUpdate = 0;
 unsigned long updateInterval = 100;
@@ -46,39 +56,43 @@ bool doObjectDetection = false;
 
 
 // Line-following functions
-#line 47 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 57 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void followLine();
-#line 82 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 92 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void followWall();
-#line 104 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 126 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 float triggerSensor(int triggerPin, int echoPin);
-#line 121 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
-int wallFollowingPid(long distance);
-#line 134 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 150 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+int pidWallFollowing(float distance);
+#line 168 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void detectObject();
-#line 141 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 175 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void sweepRecord();
-#line 164 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 198 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 int findBestAngle();
-#line 194 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
-void moveTowardAnglePid(int angle);
-#line 209 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 228 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+int moveTowardAnglePid(int angle);
+#line 243 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void forward(int speed);
-#line 223 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 257 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+void forwardWallFollowing(int leftSpeed, int rightSpeed);
+#line 267 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+void backwardWallFollowing(int leftSpeed, int rightSpeed);
+#line 277 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void forwardLeft(int speed);
-#line 234 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
-void forwardRight(int speed);
-#line 245 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
-void left(int speed);
-#line 259 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
-void right(int speed);
-#line 273 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
-void stop();
 #line 288 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+void forwardRight(int speed);
+#line 299 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+void left(int speed);
+#line 313 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+void right(int speed);
+#line 327 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+void stop();
+#line 342 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void setup();
-#line 317 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 372 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void loop();
-#line 47 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
+#line 57 "C:\\Users\\benne\\OneDrive - UBC\\2025W1\\COGS-300\\Lab\\lab_09\\lab_09.ino"
 void followLine()
 {
     int sensorValueCentre = digitalRead(irSensorPinCentre);
@@ -116,51 +130,75 @@ void followLine()
 // Wall-following functions
 void followWall()
 {
-    int distance = triggerSensor(triggerPinLeft, echoPinLeft);
-    int output = wallFollowingPid(distance);
+    float distance = triggerSensor(triggerPinLeft, echoPinLeft);
+    float output = pidWallFollowing(distance);
 
-    int distanceRight = triggerSensor(triggerPinFront, echoPinFront);
-    myservo.write(0); // look right 
+    int leftSpeed = MIN_SPEED - output;
+    int rightSpeed = MIN_SPEED + output;
 
-    if (distance > 75 && distanceRight > 75)
-    {
-        Serial.println("Switching to object detection");
-        doWallFollowing = false;
-        doObjectDetection = true;
-        stop();
-        delay(500);
-        return;
+    int sensorValueCentre = digitalRead(irSensorPinCentre);
+    int sensorValueLeft = digitalRead(irSensorPinLeft);
+    int sensorValueRight = digitalRead(irSensorPinRight);
+
+    forwardWallFollowing(leftSpeed, rightSpeed);
+
+    if (triggerSensor(triggerPinFront, echoPinFront) < MIN_DISTANCE_WF + 2) {
+        backwardWallFollowing(MIN_SPEED, MIN_SPEED);
+        delay(300);
+        lastError = 0;
     }
 
-    if (output > 0) forwardLeft(output);
-    else if (output < 0) forwardRight(-output);
+    if (distance >= MAX_DISTANCE_WF && 
+        sensorValueLeft == LOW && 
+        sensorValueCentre == LOW &&
+        sensorValueRight == LOW) {
+
+            Serial.println("Switching to object detection");
+            doWallFollowing = false;
+            doObjectDetection = true;
+            stop();
+            delay(500);
+            return;
+    }
 }
 
-float triggerSensor(int triggerPin, int echoPin)
-{
-    digitalWrite(triggerPin, LOW);
-    delayMicroseconds(5);
-    digitalWrite(triggerPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(triggerPin, LOW);
+float triggerSensor(int triggerPin, int echoPin) {
+    float totalDistance = 0;
+    const int NUM_READINGS = 3; 
 
-    long duration = pulseIn(echoPin, HIGH, 20000);
-    float distance = (duration / 2) / 29.1;
+    for (int i = 0; i < NUM_READINGS; i++) {
+        digitalWrite(triggerPin, LOW);
+        delayMicroseconds(5);
+        digitalWrite(triggerPin, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(triggerPin, LOW);
 
-    if (distance >= MAX_DISTANCE) distance = MAX_DISTANCE;
-    else if (distance <= MIN_DISTANCE) distance = MIN_DISTANCE;
+        long duration = pulseIn(echoPin, HIGH);
+        float distance = (duration / 2.0) / 29.1;
+        totalDistance += distance;
+        delayMicroseconds(50);
+    }
+    
+    float distance = totalDistance / NUM_READINGS;
+
+    if (distance > MAX_DISTANCE_WF) distance = MAX_DISTANCE_WF;
 
     return distance;
 }
 
-int wallFollowingPid(long distance)
-{
-    int error = SET_POINT - distance;
-    int output = KP * error;
+int pidWallFollowing(float distance) {
+    float error = distance - SET_POINT;
 
-    if (output > 100) output = 100;
+    float P_out = Kp * error;
 
-    return output;
+    float derivative = (error - lastError) / DT; 
+    float D_out = Kd * derivative;
+
+    lastError = error; 
+
+    float output_float = P_out + D_out;
+
+    return (int)output_float;
 }
 
 
@@ -201,7 +239,7 @@ int findBestAngle()
     // Normalize each belief
     for (int i = 0; i < NUM_POSITIONS; i++)
     {
-        beliefs[i] = beliefs[i] / MAX_DISTANCE;
+        beliefs[i] = beliefs[i] / MAX_DISTANCE_OF;
     }
 
     // Invert to likelihoods
@@ -226,10 +264,10 @@ int findBestAngle()
     return maxIndex * (180 / NUM_POSITIONS);
 }
 
-void moveTowardAnglePid(int angle)
+int moveTowardAnglePid(int angle)
 {
     int error = angle - CENTRE_ANGLE; // Center position is 90 degrees
-    int output = KP * error;
+    int output = Kp * error;
 
     if (output > 0) right(output);
     else if (output < 0) left(output);
@@ -253,6 +291,26 @@ void forward(int speed)
 
   delay(DELAY_TIME);
   stop();
+}
+
+void forwardWallFollowing(int leftSpeed, int rightSpeed) {
+    analogWrite(motorA, leftSpeed);
+    digitalWrite(motorApin1, HIGH);
+    digitalWrite(motorApin2, LOW);
+
+    analogWrite(motorB, rightSpeed);
+    digitalWrite(motorBpin1, HIGH);
+    digitalWrite(motorBpin2, LOW);
+}
+
+void backwardWallFollowing(int leftSpeed, int rightSpeed) {
+    analogWrite(motorA, leftSpeed * 2);
+    digitalWrite(motorApin1, LOW);
+    digitalWrite(motorApin2, HIGH);
+
+    analogWrite(motorB, rightSpeed * 4);
+    digitalWrite(motorBpin1, LOW);
+    digitalWrite(motorBpin2, HIGH);
 }
 
 void forwardLeft(int speed)
@@ -334,6 +392,7 @@ void setup()
 
     // Intialize servo
     myservo.attach(servoPin);
+    myservo.write(90);
 
     // Initialize ultrasonic sensor pins
     pinMode(triggerPinFront, OUTPUT), pinMode(echoPinFront, INPUT);

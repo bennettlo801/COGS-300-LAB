@@ -68,6 +68,7 @@ void followWall() {
     if (triggerSensor(triggerPinFront, echoPinFront) < MIN_DISTANCE + 2) {
         backward(MIN_SPEED, MIN_SPEED);
         delay(300);
+        lastError = 0;
     }
 }
 
@@ -149,7 +150,7 @@ void backward(int leftSpeed, int rightSpeed) {
     digitalWrite(motorApin1, LOW);
     digitalWrite(motorApin2, HIGH);
 
-    analogWrite(motorB, rightSpeed * 3);
+    analogWrite(motorB, rightSpeed * 4);
     digitalWrite(motorBpin1, LOW);
     digitalWrite(motorBpin2, HIGH);
 }
