@@ -53,3 +53,14 @@ Controls:
  - When the left sensor detects the line, it steers the robot sharply left
  - When the right sensor detects the line, it steers the robot sharply right
  - Sharp turns allow the robot to be able to take right angle and acute turns.
+
+
+### Lab 09: Transitions
+
+ - This program combines all behaviours in the following sequence:
+    1. Line following
+    2. Wall following
+    3. Object detection
+ - These behaviours are adapted from previous labs.
+ - The robot switches to line following when the IR sensors do not detect a line AND the left ultrasonic detects a nearby wall
+ - The robot switches to object detection when all 3 IR sensors detect the tape that separates the two stages.
